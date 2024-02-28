@@ -3,7 +3,7 @@
 # =======================================================
 import processes.git_utils
 import processes.filesystem_io
-from constants import REPO_TEMP_DIR, OPENAI_API_KEY
+from constants import REPO_TEMP_DIR, OPENAI_API_KEY, MAX_RETRIES
 from task import Task
 from processes.openai import OpenAIInteraction
 from typing import Iterable
@@ -34,11 +34,23 @@ class TinyGenTask(Task):
             # Get the list of all files in the repository
             file_list = self.list_all_files()
 
-            # Ask TinyGen to determine the relevant files
-            relavant_files = self.step_determine_relevant_files(self.prompt, file_list)
+            # Keep retrying until the AI is satisfied with its answer
+            for retry_id in range(MAX_RETRIES):
+                # Ask TinyGen to determine the relevant files
+                relavant_files = self.step_determine_relevant_files(self.prompt, file_list)
 
-            # TODO
-            self.logger.info(relavant_files)
+                # # Ask TinyGen to think through its changes
+                # proposed_changes = self.step_propose_changes(self.prompt, relavant_files)
+
+                # # Ask TinyGen to convert these changes to functions
+                # function_calls = self.step_generate_functions(self.prompt, proposed_changes, relavant_files)
+
+                # # Apply the changes
+                # self.apply_functions(function_calls, relavant_files)
+
+                # # Ask TinyGen if it is satisfied with the changes
+                # if self.step_ask_if_done(self.prompt, relavant_files):
+                #     break
 
             # Clean up the cloned repo
             self.delete_repo()
