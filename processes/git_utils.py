@@ -78,8 +78,22 @@ def git_generate_diff(root_path: str | Path, uuid: uuid.UUID) -> str:
     # Open the repository
     repo = pygit2.Repository(str(full_path))
 
-    # Create a diff of the changes
-    diff = repo.diff()
+    # Add all files
+    repo.index.add_all()
+    repo.index.write()
 
-    # Return the diff as a string
-    return diff.patch if diff.patch else ""  # type: ignore
+    # Create a tree from the current index to represent the current state
+    current_tree_id = repo.index.write_tree()
+    current_tree = repo.get(current_tree_id)
+
+    # Get the HEAD commit's tree to represent the last committed state
+    head_commit = repo.head.peel(pygit2.Commit)
+    head_tree = head_commit.tree
+
+    # Create a diff between the HEAD commit's tree and the current state tree
+    diff = repo.diff(head_tree, current_tree)
+
+    # Convert the diff to a string
+    diff_str = diff.patch if diff.patch else ""
+
+    return diff_str
