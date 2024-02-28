@@ -1,10 +1,11 @@
 # ====================== [TinyGen] ======================
 # Copyright (C) 2024 Edward Li - All Rights Reserved
 # =======================================================
-from constants import REPO_TEMP_DIR
-from task import Task
 import processes.git_utils
 import processes.filesystem_io
+from constants import REPO_TEMP_DIR, OPENAI_API_KEY
+from task import Task
+from processes.openai import OpenAIInteraction
 
 from traceback import format_exc
 
@@ -20,6 +21,13 @@ class TinyGenTask(Task):
             self.logger.info(f"Repository URL: {self.repo_url}")
             self.logger.info(f"Prompt: {self.prompt}")
             self.logger.info("==================================================")
+
+            # Start up OpenAI Interaction Layer
+            self.openai = OpenAIInteraction(self, OPENAI_API_KEY)
+
+            # Start a test interaction
+            self.logger.info("Testing OpenAI interaction")
+            self.logger.info(self.openai.generate([{"role": "user", "content": self.prompt}]))
 
             # Clone the repo
             self.clone_repo()

@@ -1,3 +1,4 @@
 venv
 __pycache__
+.env
 _tinygen_temp_
