@@ -119,18 +119,9 @@ class TaskManager:
         # TODO: In the future, you can replace this with a database
         self.tasks: dict[uuid.UUID, Task] = {}
 
-    def create_task(self, repo_url: str, prompt: str) -> Task:
-        # Create a unique TaskID
-        task_id = uuid.uuid4()
-
-        # Create Task
-        task = Task(task_id, repo_url, prompt)
-
-        # Store the task in the in-memory storage
+    def add_task(self, task: Task):
+        # Add a new task to the in-memory storage
         self.tasks[task.task_id] = task
-        print(f"Task {task.task_id} created.")
-
-        return task
 
     def task_exists(self, task_id: uuid.UUID) -> bool:
         # Check if the task exists in the in-memory storage

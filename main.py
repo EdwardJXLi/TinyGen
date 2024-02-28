@@ -2,7 +2,7 @@
 # Copyright (C) 2024 Edward Li - All Rights Reserved
 # =======================================================
 from task import TaskManager
-from tinygen import run_tinygen
+from tinygen import TinyGenTask
 
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from pydantic import BaseModel
@@ -31,10 +31,11 @@ async def route_root():
 @app.post("/generate")
 async def route_generate(request: Request, background_tasks: BackgroundTasks, data: GenerateInput):
     # Create a new task with the repo and prompt
-    task = task_manager.create_task(data.repoUrl, data.prompt)
+    task = TinyGenTask(uuid.uuid4(), data.repoUrl, data.prompt)
+    task_manager.add_task(task)
 
     # Start the task in the background
-    background_tasks.add_task(run_tinygen, task)
+    background_tasks.add_task(task.run_tinygen)
 
     # Return the task_id and task_url
     return {"task_id": str(task.task_id), "task_url": f"{request.base_url}task/{task.task_id}"}
