@@ -17,6 +17,17 @@ class TaskStatus(Enum):
     CANCELLED = "CANCELLED"
 
 
+# Logger handler to keep track of logs
+class ListHandler(logging.Handler):
+    def __init__(self, logs_list: list[str]):
+        super().__init__()
+        self.logs_list = logs_list
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.logs_list.append(log_entry)
+
+
 class Task:
     """
     A Task class to keep track of a TinyGen task state
@@ -31,6 +42,7 @@ class Task:
         self.start_time: datetime = datetime.now()
         self.end_time: Optional[datetime] = None
         self.elapsed_time: Optional[float] = None
+        self.logs: list[str] = []  # Initialize logs list
 
         # Setup custom logger
         self.logger = self._setup_logger(task_id)
@@ -39,15 +51,21 @@ class Task:
         logger = logging.getLogger(str(task_id))
         logger.setLevel(logging.INFO)
 
+        # Clear existing handlers
+        logger.handlers = []
+
         # Create handlers
         c_handler = logging.StreamHandler()
+        list_handler = ListHandler(self.logs)  # Use the custom handler
 
         # Create formatters and add them to the handlers
-        c_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        c_handler.setFormatter(c_format)
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        c_handler.setFormatter(formatter)
+        list_handler.setFormatter(formatter)
 
         # Add handlers to the logger
         logger.addHandler(c_handler)
+        logger.addHandler(list_handler)
 
         return logger
 
@@ -70,20 +88,24 @@ class Task:
 
     def start(self):
         # Start the task
+        self.logger.info(f"Task {self.task_id} started.")
         self.update_status(TaskStatus.PENDING)
 
     def set_result(self, result: str):
         # Set the result of the task
         self.result = result
+        self.logger.info(f"Task {self.task_id} finished!.")
         self.update_status(TaskStatus.DONE)
 
     def set_error(self, error: str):
         # Set the error of the task
         self.result = error
+        self.logger.error(f"Task {self.task_id} failed!.")
         self.update_status(TaskStatus.ERROR)
 
     def cancel(self):
         # Cancel the task
+        self.logger.warning(f"Task {self.task_id} cancelled.")
         self.update_status(TaskStatus.CANCELLED)
 
 

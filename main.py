@@ -77,6 +77,23 @@ async def route_get_result(task_id_str: str):
     return Response(task.result, media_type="text/plain")
 
 
+# === Task Logs Route ===
+@app.get("/task/{task_id_str}/logs")
+async def route_get_logs(task_id_str: str):
+    # Convert the task_id_str to a UUID
+    task_id = uuid.UUID(task_id_str)
+
+    # Check if the task exists
+    if not task_manager.task_exists(task_id):
+        return Response(f"Task {task_id_str} not found.", status_code=409, media_type="text/plain")
+
+    # Get the task
+    task = task_manager.get_task(task_id)
+
+    # Return the logs
+    return Response("\n".join(task.logs), media_type="text/plain")
+
+
 # === Task Cancel Route ===
 @app.delete("/task/{task_id_str}/cancel")
 async def route_cancel_task(task_id_str: str):
@@ -93,4 +110,5 @@ async def route_cancel_task(task_id_str: str):
     # Cancel the task
     task.cancel()
 
+    # Return the task_id and status
     return {"task_id": str(task.task_id), "status": task.status.value}

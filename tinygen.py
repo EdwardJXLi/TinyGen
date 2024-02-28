@@ -3,7 +3,7 @@
 # =======================================================
 from task import Task
 
-from traceback import print_exc
+from traceback import format_exc
 import time
 
 
@@ -14,6 +14,8 @@ def run_tinygen(task: Task):
 
         # Fake blocking task
         for i in range(15):
+            if not task.running():
+                return
             time.sleep(1)
             task.logger.info(f"Task {task.task_id} is running... (Sleep {i})")
 
@@ -21,7 +23,7 @@ def run_tinygen(task: Task):
         task.set_result("This is a fake result")
     except Exception as e:
         # Print out the error
-        print_exc()
+        task.logger.error(format_exc)
 
         # Set the task status to ERROR
         task.set_error(str(e))
