@@ -119,4 +119,7 @@ def safe_create_file(root_path: str | Path, uuid: uuid.UUID, filename: str, cont
     if not is_safe_path(root_path, full_path):
         raise ValueError("Unsafe File Operation! This should not happen!")
 
+    # Create the directory if it doesn't exist
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+
     full_path.write_text(content)
