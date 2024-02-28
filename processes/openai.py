@@ -38,7 +38,70 @@ class OpenAIInteraction:
         )
 
         # Log the response
-        self.logger.info(f"[TinyGen < GPT] Response received! Content Length: {len(response.choices[response_id].message.content)}")
+        self.logger.info(f"[TinyGen < GPT] Response received! Content Length: {len(response.choices[response_id].message.content or '')}")
 
         # Return the fist response
         return response.choices[response_id].message
+
+
+FUNCTIONS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "create_file",
+            "description": "Creates a new file with the given content. Do not call create_file if the file already exists.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "The new file to create. Assume that all relevant subdirectories will be created if they do not exist.",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "The content of the new file.",
+                    },
+                },
+                "required": ["file_path", "content"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "modify_file",
+            "description": "Modifies a given file with the given content. Do not call modify_file if the file does not exist.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "The path to the file to modify. This file must exist in the current file structure, or must me a file added in a previous step.",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "The new content of the file. This content will replace the original content of the file. Make sure to include all necessary content, including any content that was in the original file.",
+                    },
+                },
+                "required": ["file_path", "content"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "delete_file",
+            "description": "Deletes a given file. Do not call delete_file if the file does not exist.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "The path to the file to delete. This file must exist in the current file structure, or must me a file added in a previous step.",
+                    },
+                },
+                "required": ["file_path"],
+            },
+        },
+    }
+]

@@ -5,9 +5,10 @@ import processes.git_utils
 import processes.filesystem_io
 from constants import REPO_TEMP_DIR, OPENAI_API_KEY, MAX_RETRIES
 from task import Task
-from processes.openai import OpenAIInteraction
+from processes.openai import OpenAIInteraction, FUNCTIONS
 from typing import Iterable
 
+import json
 from traceback import format_exc
 
 
@@ -42,11 +43,8 @@ class TinyGenTask(Task):
                 # Ask TinyGen to think through its changes
                 proposed_changes = self.step_propose_changes(self.prompt, relavant_files)
 
-                print(proposed_changes)
-                break
-
-                # # Ask TinyGen to convert these changes to functions
-                # function_calls = self.step_generate_functions(self.prompt, proposed_changes, relavant_files)
+                # Ask TinyGen to convert these changes to functions
+                function_calls = self.step_generate_functions(self.prompt, proposed_changes, relavant_files)
 
                 # # Apply the changes
                 # self.apply_functions(function_calls, relavant_files)
@@ -204,8 +202,93 @@ class TinyGenTask(Task):
 
         return response_message.content or "No Response"
 
+    def step_generate_functions(self, user_prompt: str, proposed_changes: str, relevant_files: Iterable[str]):
+        # Begin to determine relevant files
+        self.logger.info("==================================================")
+        self.logger.info("> [STEP] : Converting Proposed Instructions to Functions")
+        self.logger.info(f"> User Prompt: {user_prompt}")
+        self.logger.info("==================================================")
+
+        # Keep Track of Function Steps
+        function_steps = []
+
+        # Generate messages for OpenAI
+        messages = [
+            {
+                "role": "system",
+                "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code within a project's codebase.\n"
+                        "Your job is to now perform the necessary changes to the codebase to fulfill the user's request. \n"
+                        "Ensure to cover all aspects of the changes discussed, including updates to documentation, dependencies, and any specific file content alterations.\n\n"
+                        "Feel free to delete any irrelevant files if you think they are no longer required.\n"
+                        "Below are the Relevant Files, wrapped in XML tags. (Example: <file><name>/path/to/file</name><content>FILE CONTENTS HERE</content></file>):\n"
+
+            },
+            {
+                "role": "user",
+                "content": self.generate_file_xml(relevant_files)
+            },
+            {
+                "role": "system",
+                "content": "User Prompt:\n"
+            },
+            {
+                "role": "user",
+                "content": user_prompt
+            },
+            {
+                "role": "system",
+                "content": "Changes Proposed:\n"
+            },
+            {
+                "role": "user",
+                "content": proposed_changes
+            },
+            {
+                "role": "system",
+                "content": "Now, give the first function that needs to be called to implement the changes. Do not respond with any messages. If no functions are needed, dont do anything."
+            },
+        ]
+
+        # Keep asking for functions until no more are needed
+        while True:
+            # Get the response from OpenAI
+            response_message = self.openai.generate(messages, tools=FUNCTIONS, temperature=0.2)
+
+            # Append the context onto the response
+            messages.append(response_message)  # type: ignore
+
+            # Get the tool calls from the response
+            tool_calls = response_message.tool_calls
+
+            # If there are tool calls, format and add them to the function steps
+            if tool_calls:
+                for tool_call in tool_calls:
+                    # Add the function call to the function steps
+                    function_steps.append({
+                        "function": tool_call.function.name,
+                        "arguments": json.loads(tool_call.function.arguments)
+                    })
+                    # Fake a function response to prompt OpenAI to generate the next function
+                    messages.append(
+                        {
+                            "tool_call_id": tool_call.id,
+                            "role": "tool",
+                            "name": tool_call.function.name,
+                            "content": "ok",
+                        }
+                    )
+
+                # Prompt OpenAI to generate the next function
+                messages.append({"role": "system", "content": "Now, give the next function that needs to be called to implement the changes. If no more functions are needed, respond with 'done'."})
+            else:
+                # No more functions are needed
+                break
+
+        self.logger.info(f"{len(function_steps)} Functions Generated!")
+        return function_steps
+
     def generate_file_xml(self, files: Iterable[str]) -> str:
-        self.logger.info(f"Generating XML for files...")
+        self.logger.info("Generating XML for files...")
         xml = ""
         for file in files:
             try:
