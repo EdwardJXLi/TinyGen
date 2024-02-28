@@ -10,3 +10,5 @@ if __name__ == "__main__":
     user_repoUrl = "https://github.com/jayhack/llm.sh"
     task = TinyGenTask(uuid4(), user_repoUrl, user_prompt)
     task.run_tinygen()
+
+    print(task.result)

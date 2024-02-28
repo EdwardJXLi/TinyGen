@@ -6,7 +6,6 @@ import processes.filesystem_io
 from constants import REPO_TEMP_DIR, OPENAI_API_KEY, MAX_RETRIES
 from task import Task
 from processes.openai import OpenAIInteraction, FUNCTIONS
-from typing import Iterable
 
 import json
 from traceback import format_exc
@@ -38,26 +37,34 @@ class TinyGenTask(Task):
             # Keep retrying until the AI is satisfied with its answer
             for retry_id in range(MAX_RETRIES):
                 # Ask TinyGen to determine the relevant files
-                relavant_files = self.step_determine_relevant_files(self.prompt, file_list)
+                relevent_files = self.step_determine_relevant_files(self.prompt, file_list)
 
                 # Ask TinyGen to think through its changes
-                proposed_changes = self.step_propose_changes(self.prompt, relavant_files)
+                proposed_changes = self.step_propose_changes(self.prompt, relevent_files)
 
                 # Ask TinyGen to convert these changes to functions
-                function_calls = self.step_generate_functions(self.prompt, proposed_changes, relavant_files)
+                function_calls = self.step_generate_functions(self.prompt, proposed_changes, relevent_files)
 
                 # Apply the changes
-                self.step_apply_functions(function_calls)
+                self.step_apply_functions(function_calls, relevent_files)
 
-                # # Ask TinyGen if it is satisfied with the changes
-                # if self.step_ask_if_done(self.prompt, relavant_files):
-                #     break
+                # Ask TinyGen if it is satisfied with the changes
+                if self.step_ask_if_done(self.prompt, relevent_files):
+                    self.logger.info("TinyGen is satisfied with the changes!")
+                    break
+
+                # Reset the repository
+                self.logger.info("TinyGen is not satisfied with the changes. Resetting the repository and trying again...")
+                self.reset_repo()
+
+            # Generate Diffs
+            diff = self.generate_diff()
 
             # Clean up the cloned repo
             self.delete_repo()
 
             # Finish the task
-            self.set_result("This is a fake result")
+            self.set_result(diff)
         except Exception as e:
             # Print out the error
             self.logger.error(format_exc())
@@ -71,7 +78,7 @@ class TinyGenTask(Task):
             except Exception as e:
                 self.logger.error(f"Error cleaning up the cloned repository: {str(e)}")
 
-    def step_determine_relevant_files(self, user_prompt: str, file_list: Iterable[str]) -> Iterable[str]:
+    def step_determine_relevant_files(self, user_prompt: str, file_list: list[str]) -> list[str]:
         # Begin to determine relevant files
         self.logger.info("==================================================")
         self.logger.info("> [STEP] : Determining Relevant Files from User Prompt")
@@ -154,7 +161,7 @@ class TinyGenTask(Task):
 
         return relavant_files
 
-    def step_propose_changes(self, user_prompt: str, relevant_files: Iterable[str]) -> str:
+    def step_propose_changes(self, user_prompt: str, relevant_files: list[str]) -> str:
         # Begin to think through changes
         self.logger.info("==================================================")
         self.logger.info("> [STEP] : Thinking Through Changes")
@@ -198,11 +205,11 @@ class TinyGenTask(Task):
 
         # Get the response from OpenAI
         self.logger.info("Asking OpenAI to think through changes...")
-        response_message = self.openai.generate(messages)
+        response_message = self.openai.generate(messages, model="gpt-4-turbo-preview")
 
         return response_message.content or "No Response"
 
-    def step_generate_functions(self, user_prompt: str, proposed_changes: str, relevant_files: Iterable[str]):
+    def step_generate_functions(self, user_prompt: str, proposed_changes: str, relevant_files: list[str]):
         # Begin to determine relevant files
         self.logger.info("==================================================")
         self.logger.info("> [STEP] : Converting Proposed Instructions to Functions")
@@ -287,7 +294,7 @@ class TinyGenTask(Task):
         self.logger.info(f"{len(function_steps)} Functions Generated!")
         return function_steps
 
-    def step_apply_functions(self, function_calls: Iterable[dict]):
+    def step_apply_functions(self, function_calls: list[dict], relevent_files: list[str]):
         # Begin to apply functions
         self.logger.info("==================================================")
         self.logger.info("> [STEP] : Applying Functions")
@@ -301,9 +308,11 @@ class TinyGenTask(Task):
                         self.modify_file(file_path, content)
                         break
                     case {"function": "create_file", "arguments": {"file_path": file_path, "content": content}}:
+                        relevent_files.append(file_path)
                         self.create_file(file_path, content)
                         break
                     case {"function": "delete_file", "arguments": {"file_path": file_path}}:
+                        relevent_files.remove(file_path)
                         self.delete_file(file_path)
                         break
                     case _:
@@ -312,7 +321,63 @@ class TinyGenTask(Task):
             except Exception as e:
                 self.logger.error(f"Error applying function: {str(e)}")
 
-    def generate_file_xml(self, files: Iterable[str]) -> str:
+    def step_ask_if_done(self, user_prompt: str, relevant_files: list[str]):
+        # Begin to determine relevant files
+        self.logger.info("==================================================")
+        self.logger.info("> [STEP] : Asking if the AI is Done")
+        self.logger.info(f"> User Prompt: {user_prompt}")
+        self.logger.info("> Relevant Files:")
+        for file in relevant_files:
+            self.logger.info(f"> - {file}")
+        self.logger.info("==================================================")
+
+        # Ask if the AI is done. Return as boolean
+        messages = [
+            {
+                "role": "system",
+                "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code.\n"
+                        "You have just finished modifying the codebase to fulfill the user's request. Now, you have to decide whether you are satisfied with the changes you have made.\n"
+                        "Think about if the changes you've made are sufficient to fulfill the user's request. Also think about if there are any unnecessary files left behind that may be removed.\n"
+                        "Below are the Original Files, wrapped in XML tags. (Example: <file><name>/path/to/file</name><content>FILE CONTENTS HERE</content></file>):\n"
+            },
+            {
+                "role": "user",
+                "content": self.generate_file_xml(relevant_files)
+            },
+            {
+                "role": "system",
+                "content": "User Prompt:\n"
+            },
+            {
+                "role": "user",
+                "content": user_prompt
+            },
+            {
+                "role": "system",
+                "content": "Respond with ONLY 'done' if you are happy with the changes you've made and are ready to finalize the process. Do not respond with any other comments if you are happy."
+                        "If you are not happy, write 2-3 sentences on what mistake you made. Be sure to only include feedback on the changes you have made, and not on the codebase itself. Do not write 'done' if you are not happy with the changes. \n"
+                        "This feedback will be incorporated back into the next attempt, so be clear and concise with what should be done/improved.\n"
+                        "Make sure to only respond with 'done' (without any quotes or backticks) OR  with any feedback for the next attempt.\n"
+                        "For example, if you were happy with the change, you will respond with:\n"
+                        "done\n\n"
+                        "If you were not happy, you will respond with something like:\n"
+                        "I noticed that the function to filter out binary files is not working as expected. It still processes some binary files, leading to errors. We should refine the file type checking logic to accurately distinguish between text and binary files.\n"
+            },
+        ]
+
+        # Get the response from OpenAI
+        response_message = self.openai.generate(messages, model="gpt-4-turbo-preview")
+
+        # Check if the response was given
+        if not response_message.content:
+            self.logger.error("No response from OpenAI.")
+            return False
+
+        # Check if the AI is done.
+        self.logger.info(f"OpenAI responded with: {response_message.content}")
+        return "done" == response_message.content.lower().strip()
+
+    def generate_file_xml(self, files: list[str]) -> str:
         self.logger.info("Generating XML for files...")
         xml = ""
         for file in files:
