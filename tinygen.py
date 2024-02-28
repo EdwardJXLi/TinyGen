@@ -306,18 +306,14 @@ class TinyGenTask(Task):
                 match function_call:
                     case {"function": "modify_file", "arguments": {"file_path": file_path, "content": content}}:
                         self.modify_file(file_path, content)
-                        break
                     case {"function": "create_file", "arguments": {"file_path": file_path, "content": content}}:
                         relevent_files.append(file_path)
                         self.create_file(file_path, content)
-                        break
                     case {"function": "delete_file", "arguments": {"file_path": file_path}}:
                         relevent_files.remove(file_path)
                         self.delete_file(file_path)
-                        break
                     case _:
                         self.logger.warn(f"Unknown function call: {function_call}")
-                        break
             except Exception as e:
                 self.logger.error(f"Error applying function: {str(e)}")
 
