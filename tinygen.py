@@ -46,8 +46,8 @@ class TinyGenTask(Task):
                 # Ask TinyGen to convert these changes to functions
                 function_calls = self.step_generate_functions(self.prompt, proposed_changes, relavant_files)
 
-                # # Apply the changes
-                # self.apply_functions(function_calls, relavant_files)
+                # Apply the changes
+                self.step_apply_functions(function_calls)
 
                 # # Ask TinyGen if it is satisfied with the changes
                 # if self.step_ask_if_done(self.prompt, relavant_files):
@@ -286,6 +286,31 @@ class TinyGenTask(Task):
 
         self.logger.info(f"{len(function_steps)} Functions Generated!")
         return function_steps
+
+    def step_apply_functions(self, function_calls: Iterable[dict]):
+        # Begin to apply functions
+        self.logger.info("==================================================")
+        self.logger.info("> [STEP] : Applying Functions")
+        self.logger.info("==================================================")
+
+        # Apply each function
+        for function_call in function_calls:
+            try:
+                match function_call:
+                    case {"function": "modify_file", "arguments": {"file_path": file_path, "content": content}}:
+                        self.modify_file(file_path, content)
+                        break
+                    case {"function": "create_file", "arguments": {"file_path": file_path, "content": content}}:
+                        self.create_file(file_path, content)
+                        break
+                    case {"function": "delete_file", "arguments": {"file_path": file_path}}:
+                        self.delete_file(file_path)
+                        break
+                    case _:
+                        self.logger.warn(f"Unknown function call: {function_call}")
+                        break
+            except Exception as e:
+                self.logger.error(f"Error applying function: {str(e)}")
 
     def generate_file_xml(self, files: Iterable[str]) -> str:
         self.logger.info("Generating XML for files...")
