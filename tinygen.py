@@ -39,8 +39,11 @@ class TinyGenTask(Task):
                 # Ask TinyGen to determine the relevant files
                 relavant_files = self.step_determine_relevant_files(self.prompt, file_list)
 
-                # # Ask TinyGen to think through its changes
-                # proposed_changes = self.step_propose_changes(self.prompt, relavant_files)
+                # Ask TinyGen to think through its changes
+                proposed_changes = self.step_propose_changes(self.prompt, relavant_files)
+
+                print(proposed_changes)
+                break
 
                 # # Ask TinyGen to convert these changes to functions
                 # function_calls = self.step_generate_functions(self.prompt, proposed_changes, relavant_files)
@@ -152,6 +155,64 @@ class TinyGenTask(Task):
             self.logger.info(f" - {file}")
 
         return relavant_files
+
+    def step_propose_changes(self, user_prompt: str, relevant_files: Iterable[str]) -> str:
+        # Begin to think through changes
+        self.logger.info("==================================================")
+        self.logger.info("> [STEP] : Thinking Through Changes")
+        self.logger.info(f"> User Prompt: {user_prompt}")
+        self.logger.info("> Available Files:")
+        for file in relevant_files:
+            self.logger.info(f"> - {file}")
+        self.logger.info("==================================================")
+
+        # Generate messages for OpenAI
+        messages = [
+            {
+                "role": "system",
+                "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code.\n"
+                        "Your current task is to analyze the user's request and brainstorm a single solution in order to fulfill the user's request. "
+                        "This is a crucial step in the process, as it sets the stage for the next step where you'll be asked to actually make the changes to the codebase.\n"
+                        "Do not include multiple solutions or options in your response. Provide the single solution that you believe is the best and easiest way to fulfill the user's request. "
+                        "Do not attempt to do anything more than what the user has asked for. If the user's request is unclear or ambiguous, make your best judgment based on the information provided.\n"
+                        "Try not to create or modify too many unnecessary files, and ensure that the changes you propose are relevant to the user's request.\n"
+                        "Based on the user's request and the relevant files you've identified, start by talking through your thought process and brainstorming the changes that need to be made. "
+                        "List out the changes in clear distinct steps. Write 1-2 sentences for each step detailing thought process behind the change. "
+                        "Give code changes that need to be made, as well as any new files that need to be added or existing files that need to be modified or deleted.\n"
+                        "If actual code changes are needed, write the code out. Do not leave any stubs or pseudocode. Write production-level code that you would be comfortable running in a real-world codebase.\n"
+                        "Feel free to delete any irrelevant files if you think they are no longer required.\n"
+                        "Below are the Relevant Files, wrapped in XML tags. (Example: <file><name>/path/to/file</name><content>FILE CONTENTS HERE</content></file>):\n"
+
+            },
+            {
+                "role": "user",
+                "content": self.generate_file_xml(relevant_files)
+            },
+            {
+                "role": "system",
+                "content": "User Prompt:\n"
+            },
+            {
+                "role": "user",
+                "content": user_prompt
+            }
+        ]
+
+        # Get the response from OpenAI
+        self.logger.info("Asking OpenAI to think through changes...")
+        response_message = self.openai.generate(messages)
+
+        return response_message.content or "No Response"
+
+    def generate_file_xml(self, files: Iterable[str]) -> str:
+        self.logger.info(f"Generating XML for files...")
+        xml = ""
+        for file in files:
+            try:
+                xml += f"<file><name>{file}</name><content>{self.read_file(file)}</content></file>"
+            except Exception as e:
+                self.logger.warn(f"Error reading file {file}: {str(e)}")
+        return xml
 
     def clone_repo(self):
         self.logger.info(f"Cloning repository: {self.repo_url}")
