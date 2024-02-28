@@ -7,7 +7,6 @@ import processes.git_utils
 import processes.filesystem_io
 
 from traceback import format_exc
-import time
 
 
 class TinyGenTask(Task):
@@ -24,27 +23,6 @@ class TinyGenTask(Task):
 
             # Clone the repo
             self.clone_repo()
-
-            self.logger.info("\n".join(self.list_all_files()))
-            self.read_file("README.md")
-            self.modify_file("README.md", "This is a fake modification")
-            self.logger.info(self.read_file("README.md"))
-
-            self.create_file("test.txt", "WASD")
-            self.delete_file("bin/llm")
-
-            # Fake Sleep
-            time.sleep(1)
-
-            self.logger.info(self.generate_diff())
-
-            # Fake Sleep
-            time.sleep(1)
-
-            self.reset_repo()
-
-            # Fake Sleep
-            time.sleep(1)
 
             # Clean up the cloned repo
             self.delete_repo()
@@ -88,26 +66,21 @@ class TinyGenTask(Task):
     def list_all_files(self):
         self.logger.info(f"Listing all files in repository: {self.repo_url}")
         files = processes.filesystem_io.list_all_files(REPO_TEMP_DIR, self.task_id)
-        self.logger.info("Files listed successfully")
         return files
 
     def read_file(self, filename: str):
         self.logger.info(f"Reading file {filename}")
         content = processes.filesystem_io.safe_read_file(REPO_TEMP_DIR, self.task_id, filename)
-        self.logger.info("File read successfully")
         return content
 
     def modify_file(self, filename: str, content: str):
         self.logger.info(f"Modifying file {filename}")
         processes.filesystem_io.safe_modify_file(REPO_TEMP_DIR, self.task_id, filename, content)
-        self.logger.info("File modified successfully")
 
     def delete_file(self, filename: str):
         self.logger.info(f"Deleting file {filename}")
         processes.filesystem_io.safe_delete_file(REPO_TEMP_DIR, self.task_id, filename)
-        self.logger.info("File deleted successfully")
 
     def create_file(self, filename: str, content: str):
         self.logger.info(f"Creating file {filename}")
         processes.filesystem_io.safe_create_file(REPO_TEMP_DIR, self.task_id, filename, content)
-        self.logger.info("File created successfully")

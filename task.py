@@ -88,25 +88,25 @@ class Task:
 
     def start(self):
         # Start the task
-        self.logger.info(f"Task {self.task_id} started.")
         self.update_status(TaskStatus.PENDING)
+        self.logger.info(f"Task {self.task_id} started.")
 
     def set_result(self, result: str):
         # Set the result of the task
         self.result = result
-        self.logger.info(f"Task {self.task_id} finished!.")
         self.update_status(TaskStatus.DONE)
+        self.logger.info(f"Task {self.task_id} finished in {self.elapsed_time} seconds!")
 
     def set_error(self, error: str):
         # Set the error of the task
         self.result = error
-        self.logger.error(f"Task {self.task_id} failed!.")
         self.update_status(TaskStatus.ERROR)
+        self.logger.error(f"Task {self.task_id} failed!.")
 
     def cancel(self):
         # Cancel the task
-        self.logger.warning(f"Task {self.task_id} cancelled.")
         self.update_status(TaskStatus.CANCELLED)
+        self.logger.warning(f"Task {self.task_id} cancelled.")
 
 
 class TaskManager:
