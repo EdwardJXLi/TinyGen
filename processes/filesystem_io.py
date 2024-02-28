@@ -82,7 +82,7 @@ def git_generate_diff(root_path: str | Path, uuid: uuid.UUID) -> str:
     diff = repo.diff()
 
     # Return the diff as a string
-    return diff.patch if diff.patch else ""
+    return diff.patch if diff.patch else ""  # type: ignore
 
 
 def list_all_files(root_path: str | Path, uuid: uuid.UUID) -> list[str]:
