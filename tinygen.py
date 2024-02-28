@@ -3,11 +3,13 @@
 # =======================================================
 from constants import REPO_TEMP_DIR
 from task import Task
-from processes.filesystem_io import (
+from processes.git_utils import (
     git_clone_repo,
     git_delete_repo,
     git_reset_repo,
-    git_generate_diff,
+    git_generate_diff
+)
+from processes.filesystem_io import (
     list_all_files,
     safe_read_file,
     safe_modify_file,
