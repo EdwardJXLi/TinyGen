@@ -3,19 +3,8 @@
 # =======================================================
 from constants import REPO_TEMP_DIR
 from task import Task
-from processes.git_utils import (
-    git_clone_repo,
-    git_delete_repo,
-    git_reset_repo,
-    git_generate_diff
-)
-from processes.filesystem_io import (
-    list_all_files,
-    safe_read_file,
-    safe_modify_file,
-    safe_delete_file,
-    safe_create_file
-)
+import processes.git_utils
+import processes.filesystem_io
 
 from traceback import format_exc
 import time
@@ -34,35 +23,31 @@ class TinyGenTask(Task):
             self.logger.info("==================================================")
 
             # Clone the repo
-            self.logger.info(f"Cloning repository: {self.repo_url}")
-            git_clone_repo(REPO_TEMP_DIR, self.task_id, self.repo_url)
-            self.logger.info("Repository cloned successfully")
+            self.clone_repo()
 
-            self.logger.info("\n".join(list_all_files(REPO_TEMP_DIR, self.task_id)))
-            self.logger.info(safe_read_file(REPO_TEMP_DIR, self.task_id, "README.md"))
-            safe_modify_file(REPO_TEMP_DIR, self.task_id, "README.md", "This is a fake modification")
-            self.logger.info(safe_read_file(REPO_TEMP_DIR, self.task_id, "README.md"))
+            self.logger.info("\n".join(self.list_all_files()))
+            self.read_file("README.md")
+            self.modify_file("README.md", "This is a fake modification")
+            self.logger.info(self.read_file("README.md"))
 
-            safe_create_file(REPO_TEMP_DIR, self.task_id, "test.txt", "WASD")
-            safe_delete_file(REPO_TEMP_DIR, self.task_id, "bin/llm")
+            self.create_file("test.txt", "WASD")
+            self.delete_file("bin/llm")
 
             # Fake Sleep
             time.sleep(1)
 
-            self.logger.info(git_generate_diff(REPO_TEMP_DIR, self.task_id))
+            self.logger.info(self.generate_diff())
 
             # Fake Sleep
             time.sleep(1)
 
-            git_reset_repo(REPO_TEMP_DIR, self.task_id)
+            self.reset_repo()
 
             # Fake Sleep
             time.sleep(1)
 
             # Clean up the cloned repo
-            self.logger.info("Cleaning up the cloned repository")
-            git_delete_repo(REPO_TEMP_DIR, self.task_id)
-            self.logger.info("Repository cleaned up successfully")
+            self.delete_repo()
 
             # Finish the task
             self.set_result("This is a fake result")
@@ -75,7 +60,54 @@ class TinyGenTask(Task):
 
             # Try to clean the repo folder
             try:
-                git_delete_repo(REPO_TEMP_DIR, self.task_id)
-                self.logger.info("Repository cleaned up successfully")
+                self.delete_repo()
             except Exception as e:
                 self.logger.error(f"Error cleaning up the cloned repository: {str(e)}")
+
+    def clone_repo(self):
+        self.logger.info(f"Cloning repository: {self.repo_url}")
+        processes.git_utils.git_clone_repo(REPO_TEMP_DIR, self.task_id, self.repo_url)
+        self.logger.info("Repository cloned successfully")
+
+    def delete_repo(self):
+        self.logger.info(f"Deleting repository: {self.repo_url}")
+        processes.git_utils.git_delete_repo(REPO_TEMP_DIR, self.task_id)
+        self.logger.info("Repository deleted successfully")
+
+    def reset_repo(self):
+        self.logger.info(f"Resetting repository: {self.repo_url}")
+        processes.git_utils.git_reset_repo(REPO_TEMP_DIR, self.task_id)
+        self.logger.info("Repository reset successfully")
+
+    def generate_diff(self):
+        self.logger.info(f"Generating diff for repository: {self.repo_url}")
+        diff = processes.git_utils.git_generate_diff(REPO_TEMP_DIR, self.task_id)
+        self.logger.info("Diff generated successfully")
+        return diff
+
+    def list_all_files(self):
+        self.logger.info(f"Listing all files in repository: {self.repo_url}")
+        files = processes.filesystem_io.list_all_files(REPO_TEMP_DIR, self.task_id)
+        self.logger.info("Files listed successfully")
+        return files
+
+    def read_file(self, filename: str):
+        self.logger.info(f"Reading file {filename}")
+        content = processes.filesystem_io.safe_read_file(REPO_TEMP_DIR, self.task_id, filename)
+        self.logger.info("File read successfully")
+        return content
+
+    def modify_file(self, filename: str, content: str):
+        self.logger.info(f"Modifying file {filename}")
+        processes.filesystem_io.safe_modify_file(REPO_TEMP_DIR, self.task_id, filename, content)
+        self.logger.info("File modified successfully")
+
+    def delete_file(self, filename: str):
+        self.logger.info(f"Deleting file {filename}")
+        processes.filesystem_io.safe_delete_file(REPO_TEMP_DIR, self.task_id, filename)
+        self.logger.info("File deleted successfully")
+
+    def create_file(self, filename: str, content: str):
+        self.logger.info(f"Creating file {filename}")
+        processes.filesystem_io.safe_create_file(REPO_TEMP_DIR, self.task_id, filename, content)
+        self.logger.info("File created successfully")
