@@ -6,6 +6,8 @@ from task import Task
 from processes.fs_io import (
     git_clone_repo,
     git_delete_repo,
+    git_reset_repo,
+    git_generate_diff,
     list_all_files,
     safe_read_file,
     safe_modify_file,
@@ -39,10 +41,20 @@ def run_tinygen(task: Task):
         task.logger.info(safe_read_file(REPO_TEMP_DIR, task.task_id, "README.md"))
 
         safe_create_file(REPO_TEMP_DIR, task.task_id, "test.txt", "WASD")
-        safe_delete_file(REPO_TEMP_DIR, task.task_id, "poetry.lock")
+        safe_delete_file(REPO_TEMP_DIR, task.task_id, "bin/llm")
 
         # Fake Sleep
-        time.sleep(3)
+        time.sleep(1)
+
+        task.logger.info(git_generate_diff(REPO_TEMP_DIR, task.task_id))
+
+        # Fake Sleep
+        time.sleep(1)
+
+        git_reset_repo(REPO_TEMP_DIR, task.task_id)
+
+        # Fake Sleep
+        time.sleep(1)
 
         # Clean up the cloned repo
         task.logger.info("Cleaning up the cloned repository")

@@ -42,6 +42,49 @@ def git_delete_repo(root_path: str | Path, uuid: uuid.UUID):
         shutil.rmtree(full_path)
 
 
+def git_reset_repo(root_path: str | Path, uuid: uuid.UUID):
+    """
+    Resets a cloned repository back to its original state using pygit2.
+
+    Parameters:
+        root_path (str | Path): The root directory where the repository is located.
+        uuid (uuid.UUID): The UUID that was used to name the subdirectory for the clone.
+    """
+    # Construct the full path of the repository to reset
+    full_path = Path(root_path, str(uuid))
+
+    # Open the repository
+    repo = pygit2.Repository(str(full_path))
+
+    # Reset the repository
+    git_reset_flag = pygit2.GIT_RESET_HARD  # type: ignore
+    repo.reset(repo.head.target, git_reset_flag)
+
+
+def git_generate_diff(root_path: str | Path, uuid: uuid.UUID) -> str:
+    """
+    Generates a diff of the changes in a cloned repository using pygit2.
+
+    Parameters:
+        root_path (str | Path): The root directory where the repository is located.
+        uuid (uuid.UUID): The UUID that was used to name the subdirectory for the clone.
+
+    Returns:
+        str: The diff of the changes in the cloned repository.
+    """
+    # Construct the full path of the repository to generate the diff
+    full_path = Path(root_path, str(uuid))
+
+    # Open the repository
+    repo = pygit2.Repository(str(full_path))
+
+    # Create a diff of the changes
+    diff = repo.diff()
+
+    # Return the diff as a string
+    return diff.patch if diff.patch else ""
+
+
 def list_all_files(root_path: str | Path, uuid: uuid.UUID) -> list[str]:
     """
     Lists all files in the specified directory and its subdirectories.
