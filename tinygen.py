@@ -117,7 +117,7 @@ class TinyGenTask(Task):
 
         # Check if if no files are relavant
         if not response_message.content or "[NO RESPONSE]" in response_message.content.strip():
-            raise Exception("TinyGen was unable to determine any files to change with the prompt. Consider revising the prompt to be more specific.")
+            return []
 
         # Append the context onto the response
         messages.append(response_message)  # type: ignore
@@ -158,11 +158,14 @@ class TinyGenTask(Task):
 
         # Check if if no files are relavant
         if not response_message.content or "[NO RESPONSE]" in response_message.content.strip():
-            raise Exception("TinyGen was unable to determine any files to change with the prompt. Consider revising the prompt to be more specific.")
+            return []
 
         # Format and return message from OpenAI
         formatted_relavant_files = response_message.content or ""
         relavant_files = formatted_relavant_files.split()
+
+        # Filter any invalid files generated
+        relavant_files = self.filter_invalid_files(relavant_files)
 
         # Log the relevant files
         self.logger.info("[STEP] Relevant Files Generated!")
@@ -418,6 +421,24 @@ class TinyGenTask(Task):
         self.logger.info(f"Listing all files in repository: {self.repo_url}")
         files = utils.filesystem_io.list_all_files(REPO_TEMP_DIR, self.task_id)
         return files
+
+    def filter_invalid_files(self, file_list: list[str]) -> list[str]:
+        self.logger.info("Filtering invalid files...")
+
+        # Try to open each file. If it fails, remove it from the list
+        valid_files = []
+        for file in file_list:
+            try:
+                self.read_file(file)
+                valid_files.append(file)
+            except Exception as e:
+                self.logger.warn(f"Error reading file {file}: {str(e)}")
+
+        # Print which files are filtered
+        invalid_files = list(set(file_list) - set(valid_files))
+        self.logger.info(f"Filtered {len(invalid_files)} invalid files: {invalid_files}")
+
+        return valid_files
 
     def read_file(self, filename: str):
         self.logger.info(f"Reading file {filename}")
