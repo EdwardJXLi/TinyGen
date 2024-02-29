@@ -95,7 +95,8 @@ class TinyGenTask(Task):
         messages = [
             {
                 "role": "system",
-                "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code.\n"
+                "content": "You are TinyGen, a code generation assistant specialized in accurately understanding and processing user requests to generate, modify, or delete code, documentation, or other project-related files.\n"
+                        "Your primary task is to analyze the user's request and develop a single, optimal solution to fulfill it.\n"
                         "Your current task is to analyze the user's request and identify which files in the existing directory are relevant to this request.\n"
                         "If the user's request is in the form of a problem, try to fix it. If the user's request is in the form of a missing feature, try to add it.\n"
                         "Below is a list of files currently available in the directory. Your goal is to filter out only those files that may be relevant to accomplishing the user's request. "
@@ -192,19 +193,27 @@ class TinyGenTask(Task):
         messages = [
             {
                 "role": "system",
-                "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code.\n"
+                "content": "You are TinyGen, a code generation assistant specialized in accurately understanding and processing user requests to generate, modify, or delete code, documentation, or other project-related files.\n"
+                        "Your primary task is to analyze the user's request and develop a single, optimal solution to fulfill it.\n"
+                        "The user request may be in a form of a prompt, or it may be in a form of a ticket or issue description."
+                        "Here's how to approach different types of requests:\n"
+                        "For Problem-solving Requests: If the user presents a problem, focus on identifying and fixing it with a clear, concise solution.\n"
+                        "For Feature Addition Requests: If the user asks for a new feature, detail how to incorporate it effectively into the existing codebase or project structure.\n"
+                        "For Documentation and Non-code Requests: If the request involves creating or updating documentation (e.g., README.md), prioritize content creation, formatting, and organization over code generation."
+                        "\n\n"
                         "Your current task is to analyze the user's request and brainstorm a single solution in order to fulfill the user's request. "
                         "If the user's request is in the form of a problem, try to fix it. If the user's request is in the form of a missing feature, try to add it.\n"
                         "This is a crucial step in the process, as it sets the stage for the next step where you'll be asked to actually make the changes to the codebase.\n"
                         "Do not include multiple solutions or options in your response. Provide the single solution that you believe is the best and easiest way to fulfill the user's request. "
                         "Do not attempt to do anything more than what the user has asked for. If the user's request is unclear or ambiguous, make your best judgment based on the information provided.\n"
                         "Try not to create or modify too many unnecessary files, and ensure that the changes you propose are relevant to the user's request.\n"
-                        "Based on the user's request and the relevant files you've identified, start by talking through your thought process and brainstorming the changes that need to be made. "
+                        "Based on the user's request and a list of potentially relevant files you've identified, start by talking through your thought process and brainstorming the changes that need to be made. "
+                        "Note that not all files listed may be useful for fulfilling the user's request, so be sure to only include changes that are directly relevant to the user's request.\n"
                         "List out the changes in clear distinct steps. Write 1-2 sentences for each step detailing thought process behind the change. "
                         "Give code changes that need to be made, as well as any new files that need to be added or existing files that need to be modified or deleted.\n"
                         "If actual code changes are needed, write the code out. Do not leave any stubs or pseudocode. Write production-level code that you would be comfortable running in a real-world codebase.\n"
                         "Feel free to delete any irrelevant files if you think they are no longer required.\n"
-                        "Below are the Relevant Files, wrapped in XML tags. (Example: <file><name>/path/to/file</name><content>FILE CONTENTS HERE</content></file>):\n"
+                        "Below are any potentially relevant files, wrapped in XML tags. (Example: <file><name>/path/to/file</name><content>FILE CONTENTS HERE</content></file>):\n"
 
             },
             {
@@ -241,29 +250,14 @@ class TinyGenTask(Task):
         messages = [
             {
                 "role": "system",
-                "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code within a project's codebase.\n"
+                "content": "You are TinyGen, a code generation assistant specialized in accurately understanding and processing user requests to generate, modify, or delete code, documentation, or other project-related files.\n"
                         "Your job is to now perform the necessary changes to the codebase to fulfill the user's request. \n"
-                        "If the user's request is in the form of a problem, try to fix it. If the user's request is in the form of a missing feature, try to add it.\n"
-                        "Ensure to cover all aspects of the changes discussed, including updates to documentation, dependencies, and any specific file content alterations.\n\n"
-                        "Feel free to delete any irrelevant files if you think they are no longer required.\n"
-                        "Below are the Relevant Files, wrapped in XML tags. (Example: <file><name>/path/to/file</name><content>FILE CONTENTS HERE</content></file>):\n"
+                        "Ensure to cover all aspects of the changes discussed, including updates to documentation, dependencies, and any specific file content alterations.\n"
+                        "Do not try to do anything more than what is listed in the proposed changes.\n"
+                        "If any of the relevant files are not used as part of the proposed changes, do not do anything to them.\n"
+                        "If any of the relevant files require no changes, do not do anything to them.\n"
+                        "Below are the proposed changes:\n"
 
-            },
-            {
-                "role": "user",
-                "content": self.encode_files(relevant_files)
-            },
-            {
-                "role": "system",
-                "content": "User Prompt:\n"
-            },
-            {
-                "role": "user",
-                "content": user_prompt
-            },
-            {
-                "role": "system",
-                "content": "Changes Proposed:\n"
             },
             {
                 "role": "user",
@@ -271,8 +265,12 @@ class TinyGenTask(Task):
             },
             {
                 "role": "system",
-                "content": "Now, give the first function that needs to be called to implement the changes. Do not respond with any messages. If no functions are needed, dont do anything."
+                "content": "Below are any potentially relevant files, wrapped in XML tags. (Example: <file><name>/path/to/file</name><content>FILE CONTENTS HERE</content></file>):\n"
             },
+            {
+                "role": "user",
+                "content": self.encode_files(relevant_files)
+            }
         ]
 
         # Keep asking for functions until no more are needed
@@ -305,7 +303,7 @@ class TinyGenTask(Task):
                     )
 
                 # Prompt OpenAI to generate the next function
-                messages.append({"role": "system", "content": "Now, give the next function that needs to be called to implement the changes. If no more functions are needed, respond with 'done'."})
+                messages.append({"role": "system", "content": "Now, apply any more changes you deem fit. Do not try not to repeat and previous functions you have already called. If no more functions are needed, respond with 'done'."})
             else:
                 # No more functions are needed
                 break
@@ -350,7 +348,8 @@ class TinyGenTask(Task):
         messages = [
             {
                 "role": "system",
-                "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code.\n"
+                "content": "You are TinyGen, a code generation assistant specialized in accurately understanding and processing user requests to generate, modify, or delete code, documentation, or other project-related files.\n"
+                        "Your primary task is to analyze the user's request and develop a single, optimal solution to fulfill it.\n"
                         "If the user's request is in the form of a problem, try to fix it. If the user's request is in the form of a missing feature, try to add it.\n"
                         "You have just finished modifying the codebase to fulfill the user's request. Now, you have to decide whether you are satisfied with the changes you have made.\n"
                         "Think about if the changes you've made are sufficient to fulfill the user's request. Also think about if there are any unnecessary files left behind that may be removed.\n"
