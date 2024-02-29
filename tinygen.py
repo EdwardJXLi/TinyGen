@@ -96,7 +96,8 @@ class TinyGenTask(Task):
             {
                 "role": "system",
                 "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code.\n"
-                        "Your current task is to analyze the user's request and identify which files in the existing directory are relevant to this request. "
+                        "Your current task is to analyze the user's request and identify which files in the existing directory are relevant to this request.\n"
+                        "If the user's request is in the form of a problem, try to fix it. If the user's request is in the form of a missing feature, try to add it.\n"
                         "Below is a list of files currently available in the directory. Your goal is to filter out only those files that may be relevant to accomplishing the user's request. "
                         "Available files in the directory:\n"
                         f"{formatted_file_list}\n\n"
@@ -193,6 +194,7 @@ class TinyGenTask(Task):
                 "role": "system",
                 "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code.\n"
                         "Your current task is to analyze the user's request and brainstorm a single solution in order to fulfill the user's request. "
+                        "If the user's request is in the form of a problem, try to fix it. If the user's request is in the form of a missing feature, try to add it.\n"
                         "This is a crucial step in the process, as it sets the stage for the next step where you'll be asked to actually make the changes to the codebase.\n"
                         "Do not include multiple solutions or options in your response. Provide the single solution that you believe is the best and easiest way to fulfill the user's request. "
                         "Do not attempt to do anything more than what the user has asked for. If the user's request is unclear or ambiguous, make your best judgment based on the information provided.\n"
@@ -241,6 +243,7 @@ class TinyGenTask(Task):
                 "role": "system",
                 "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code within a project's codebase.\n"
                         "Your job is to now perform the necessary changes to the codebase to fulfill the user's request. \n"
+                        "If the user's request is in the form of a problem, try to fix it. If the user's request is in the form of a missing feature, try to add it.\n"
                         "Ensure to cover all aspects of the changes discussed, including updates to documentation, dependencies, and any specific file content alterations.\n\n"
                         "Feel free to delete any irrelevant files if you think they are no longer required.\n"
                         "Below are the Relevant Files, wrapped in XML tags. (Example: <file><name>/path/to/file</name><content>FILE CONTENTS HERE</content></file>):\n"
@@ -348,6 +351,7 @@ class TinyGenTask(Task):
             {
                 "role": "system",
                 "content": "You are TinyGen, a code generation assistant specialized in understanding and processing user requests to generate or modify code.\n"
+                        "If the user's request is in the form of a problem, try to fix it. If the user's request is in the form of a missing feature, try to add it.\n"
                         "You have just finished modifying the codebase to fulfill the user's request. Now, you have to decide whether you are satisfied with the changes you have made.\n"
                         "Think about if the changes you've made are sufficient to fulfill the user's request. Also think about if there are any unnecessary files left behind that may be removed.\n"
                         "Below are the Original Files, wrapped in XML tags. (Example: <file><name>/path/to/file</name><content>FILE CONTENTS HERE</content></file>):\n"
