@@ -36,3 +36,32 @@ SUPABASE_API_KEY={your-supabase-key}
 ```bash
 uvicorn main:app --reload
 ```
+
+## Docker Setup Instructions
+
+### Prerequisites
+
+Make sure you have Docker and docker-compose installed on your machine.
+
+### Docker Instructions
+
+1. Clone the repository:
+```bash
+git clone https://github.com/EdwardJXLi/TinyGen
+```
+
+2. Navigate to the cloned directory where you will find the `docker-compose.yml` file.
+
+3. Update the `docker-compose.yml` file with your OpenAI API key, Supabase API key, and Supabase Project URL. Replace placeholder values with your actual credentials.
+
+4. Build and run the Docker container using the command:
+```bash
+docker-compose up
+```
+
+5. Access the running application at `http://localhost:8000` or the configured port.
+
+### Additional Notes
+
+- **Environment Variables**: The variables in `docker-compose.yml` can be adjusted to suit your needs.
+- **Stopping TinyGen**: Use `docker-compose down` to stop and remove the Docker containers.
