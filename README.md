@@ -6,6 +6,22 @@ TinyGen is a code generation assistant that specializes in accurately understand
 
 TinyGen utilizes OpenAI's GPT models to analyze user requests and perform tasks such as problem-solving, feature addition, and documentation updates in an efficient and accurate manner.
 
+## Quickstart
+
+> A demo of the TinyGen API is available at [tinygen.hydranet.dev](https://tinygen.hydranet.dev/).
+
+To to get started with using the TinyGen API, follow these steps:
+
+1. **Start a Task**: Post to the `/generate` endpoint to start a new TinyGen task. Provide the repository URL and your prompt in the request body.
+
+2. **Check Task Status**: Use the `/task/{task_id}` endpoint to check the status of your task.
+
+3. **View Task Logs**: To see what happened during the task execution, visit the `/task/{task_id}/logs` endpoint.
+
+4. **Get Task Result**: Once completed, the result of your task can be found at `/task/{task_id}/result`.
+
+For more detailed instructions on using the TinyGen API, see the [Usage Guide](USAGE.md).
+
 ## Local Installation Instructions
 
 To set up TinyGen on your local machine, follow these steps:
