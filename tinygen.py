@@ -155,7 +155,7 @@ class TinyGenTask(Task):
 
         # Get follow up response from OpenAI
         self.logger.info("Asking OpenAI to format relevant files into a list...")
-        response_message = self.gpt.generate(messages, temperature=0.1)  # Lower temperature to ensure list is generated properly
+        response_message = self.gpt.generate(messages)
 
         # Check if if no files are relavant
         if not response_message.content or "NO RESPONSE" in response_message.content.strip():
