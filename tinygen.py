@@ -211,7 +211,8 @@ class TinyGenTask(Task):
                         "Note that not all files listed may be useful for fulfilling the user's request, so be sure to only include changes that are directly relevant to the user's request.\n"
                         "List out the changes in clear distinct steps. Write 1-2 sentences for each step detailing thought process behind the change. "
                         "Give code changes that need to be made, as well as any new files that need to be added or existing files that need to be modified or deleted.\n"
-                        "If actual code changes are needed, write the code out. Do not leave any stubs or pseudocode. Write production-level code that you would be comfortable running in a real-world codebase.\n"
+                        "If actual code changes are needed, write the code out. Do not leave any stubs or pseudocode. Avoid writing things like '// Implement the rest of the function here'"
+                        "Write production-level code that you would be comfortable running in a real-world codebase.\n"
                         "Feel free to delete any irrelevant files if you think they are no longer required.\n"
                         "Below are any potentially relevant files, wrapped in XML tags. (Example: <file><name>/path/to/file</name><content>FILE CONTENTS HERE</content></file>):\n"
 
