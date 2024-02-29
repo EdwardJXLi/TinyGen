@@ -32,7 +32,7 @@ class OpenAIInteraction:
         self,
         messages: Iterable,
         model: str = DEFAULT_GPT_MODEL,
-        temperature: float = 0.3,
+        temperature: float = 0.5,
         response_id: int = 0,
         **kwargs
     ) -> ChatCompletionMessage:

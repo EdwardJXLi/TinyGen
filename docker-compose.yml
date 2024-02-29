@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: https://github.com/EdwardJXLi/TinyGen.git#main
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      OPENAI_API_KEY: "YourOpenAIKeyHere"
+      SUPABASE_API_KEY: "YourSupabaseAPIKeyHere"
+      SUPABASE_PROJECT_URL: "YourSupabaseProjectURLHere"
+      REPO_TEMP_DIR: "_tinygen_temp_"
+      DEFAULT_GPT_MODEL: "gpt-3.5-turbo"
+      MAX_RETRIES: "3"
+      HOST: "0.0.0.0"
+      PORT: "8000"
+    restart: unless-stopped
