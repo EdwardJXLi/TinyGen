@@ -127,3 +127,25 @@ DELETE /task/uuid-of-the-task/cancel
   "status": "Cancelled"
 }
 ```
+
+### Health Check
+
+- **Method**: GET
+- **URL**: `/health`
+- **Description**: Provides a summary of the number of tasks in different states: pending, finished, and errored.
+
+**Example Request**:
+```
+GET /health
+```
+
+**Example Response**:
+```json
+{
+    "pending": 1, 
+    "finished": 2, 
+    "errored": 3, 
+    "cancelled": 4, 
+    "other": 5
+}
+```

@@ -136,3 +136,10 @@ async def route_cancel_task(task_id_str: str):
 
     # Return the task_id and status
     return {"task_id": str(task.task_id), "status": task.status.value}
+
+
+# === Health Check Route ===
+@app.get("/health")
+async def route_health():
+    task_summary = task_manager.get_task_summary()
+    return task_summary

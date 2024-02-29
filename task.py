@@ -172,3 +172,20 @@ class TaskManager:
     def get_num_running_tasks(self) -> int:
         # Count the number of running tasks
         return sum(1 for task in self.tasks.values() if not task.is_done())
+
+    def get_task_summary(self):
+        # Get a summary of the tasks
+        # Loop through all tasks and count the number of tasks in each status
+        summary = {"pending": 0, "finished": 0, "errored": 0, "cancelled": 0, "other": 0}
+        for task in self.tasks.values():
+            if task.status == TaskStatus.PENDING:
+                summary["pending"] += 1
+            elif task.status == TaskStatus.DONE:
+                summary["finished"] += 1
+            elif task.status == TaskStatus.ERROR:
+                summary["errored"] += 1
+            elif task.status == TaskStatus.CANCELLED:
+                summary["cancelled"] += 1
+            else:
+                summary["other"] += 1
+        return summary
