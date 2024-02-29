@@ -1,12 +1,13 @@
 # ====================== [TinyGen] ======================
 # Copyright (C) 2024 Edward Li - All Rights Reserved
 # =======================================================
-from task import TaskManager
-from tinygen import TinyGenTask
+import uuid
 
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from pydantic import BaseModel
-import uuid
+
+from task import TaskManager
+from tinygen import TinyGenTask
 
 # Create a FastAPI instance
 app = FastAPI()

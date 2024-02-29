@@ -1,10 +1,12 @@
 # ====================== [TinyGen] ======================
 # Copyright (C) 2024 Edward Li - All Rights Reserved
 # =======================================================
-from openai import OpenAI
-from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from logging import Logger
 from typing import Iterable
+
+from openai import OpenAI
+from openai.types.chat.chat_completion_message import ChatCompletionMessage
+
 from constants import DEFAULT_GPT_MODEL
 
 

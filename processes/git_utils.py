@@ -1,10 +1,10 @@
 # ====================== [TinyGen] ======================
 # Copyright (C) 2024 Edward Li - All Rights Reserved
 # =======================================================
-from pathlib import Path
 import shutil
 import pygit2
 import uuid
+from pathlib import Path
 
 
 def git_clone_repo(root_path: str | Path, uuid: uuid.UUID, github_url: str):

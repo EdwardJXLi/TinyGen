@@ -1,8 +1,9 @@
 # ====================== [TinyGen] ======================
 # Copyright (C) 2024 Edward Li - All Rights Reserved
 # =======================================================
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
 
 load_dotenv()  # take environment variables from .env.
 

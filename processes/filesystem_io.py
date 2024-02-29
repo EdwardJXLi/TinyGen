@@ -1,8 +1,8 @@
 # ====================== [TinyGen] ======================
 # Copyright (C) 2024 Edward Li - All Rights Reserved
 # =======================================================
-from pathlib import Path
 import uuid
+from pathlib import Path
 
 
 def list_all_files(root_path: str | Path, uuid: uuid.UUID) -> list[str]:

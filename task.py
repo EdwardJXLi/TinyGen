@@ -1,9 +1,10 @@
 # ====================== [TinyGen] ======================
 # Copyright (C) 2024 Edward Li - All Rights Reserved
 # =======================================================
-from enum import Enum
 import uuid
 import logging
+
+from enum import Enum
 from datetime import datetime
 from typing import Optional
 

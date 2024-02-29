@@ -1,14 +1,14 @@
 # ====================== [TinyGen] ======================
 # Copyright (C) 2024 Edward Li - All Rights Reserved
 # =======================================================
-import processes.git_utils
-import processes.filesystem_io
-from constants import REPO_TEMP_DIR, OPENAI_API_KEY, MAX_RETRIES
-from task import Task
-from processes.openai import OpenAIInteraction, FUNCTIONS
-
 import json
 from traceback import format_exc
+
+import processes.git_utils
+import processes.filesystem_io
+from processes.openai import OpenAIInteraction, FUNCTIONS
+from constants import REPO_TEMP_DIR, OPENAI_API_KEY, MAX_RETRIES
+from task import Task
 
 
 class TinyGenTask(Task):

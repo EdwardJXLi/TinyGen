@@ -1,8 +1,9 @@
 # ====================== [TinyGen] ======================
 # Copyright (C) 2024 Edward Li - All Rights Reserved
 # =======================================================
-from tinygen import TinyGenTask
 from uuid import uuid4
+
+from tinygen import TinyGenTask
 
 # Test the run_tinygen function
 if __name__ == "__main__":
