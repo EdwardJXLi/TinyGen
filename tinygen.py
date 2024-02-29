@@ -102,7 +102,7 @@ class TinyGenTask(Task):
                         f"{formatted_file_list}\n\n"
                         "With the user's request in mind, first talk through your thought process and brainstorm which files you think are relevant. Files that are deemed optional should be included as well.\n"
                         "Remember to include all file types, such as 'readme', 'requirements', or others, that might typically be overlooked but could be crucial depending on the request.\n"
-                        "If you determine that no files are relevant to the user's request, or if you are unsure about the relevance of any files, please respond with [NO RESPONSE].\n\n"
+                        "If you determine that no files are relevant to the user's request, or if you are unsure about the relevance of any files, please respond with NO RESPONSE.\n\n"
                         "User's request:\n"
             },
             {
@@ -116,7 +116,8 @@ class TinyGenTask(Task):
         response_message = self.gpt.generate(messages)
 
         # Check if if no files are relavant
-        if not response_message.content or "[NO RESPONSE]" in response_message.content.strip():
+        if not response_message.content or "NO RESPONSE" in response_message.content.strip():
+            self.logger.warn("OpenAI did not find any relevant files.")
             return []
 
         # Append the context onto the response
@@ -148,7 +149,7 @@ class TinyGenTask(Task):
                         "requirements.txt\n"
                         "README.md\n\n"
                         "Please provide your detailed response now. Only include files that exist!\n"
-                        "If you determine that no files are relevant to the user's request, or if you are unsure about the relevance of any files, please respond with [NO RESPONSE].\n\n"
+                        "If you determine that no files are relevant to the user's request, or if you are unsure about the relevance of any files, please respond with NO RESPONSE.\n\n"
             }
         )
 
@@ -157,7 +158,8 @@ class TinyGenTask(Task):
         response_message = self.gpt.generate(messages)
 
         # Check if if no files are relavant
-        if not response_message.content or "[NO RESPONSE]" in response_message.content.strip():
+        if not response_message.content or "NO RESPONSE" in response_message.content.strip():
+            self.logger.warn("OpenAI did not find any relevant files.")
             return []
 
         # Format and return message from OpenAI
@@ -426,11 +428,12 @@ class TinyGenTask(Task):
         self.logger.info("Filtering invalid files...")
 
         # Try to open each file. If it fails, remove it from the list
-        valid_files = []
+        # Use a set so that duplicates are also removed.
+        valid_files = set()
         for file in file_list:
             try:
                 self.read_file(file)
-                valid_files.append(file)
+                valid_files.add(file)
             except Exception as e:
                 self.logger.warn(f"Error reading file {file}: {str(e)}")
 
@@ -438,7 +441,7 @@ class TinyGenTask(Task):
         invalid_files = list(set(file_list) - set(valid_files))
         self.logger.info(f"Filtered {len(invalid_files)} invalid files: {invalid_files}")
 
-        return valid_files
+        return list(valid_files)
 
     def read_file(self, filename: str):
         self.logger.info(f"Reading file {filename}")
