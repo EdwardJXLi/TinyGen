@@ -4,9 +4,9 @@
 import json
 from traceback import format_exc
 
-import processes.git_utils
-import processes.filesystem_io
-from processes.openai import OpenAIInteraction, FUNCTIONS
+import utils.git
+import utils.filesystem_io
+from utils.openai import OpenAIInteraction, FUNCTIONS
 from constants import REPO_TEMP_DIR, OPENAI_API_KEY, MAX_RETRIES
 from task import Task
 
@@ -385,43 +385,43 @@ class TinyGenTask(Task):
 
     def clone_repo(self):
         self.logger.info(f"Cloning repository: {self.repo_url}")
-        processes.git_utils.git_clone_repo(REPO_TEMP_DIR, self.task_id, self.repo_url)
+        utils.git.git_clone_repo(REPO_TEMP_DIR, self.task_id, self.repo_url)
         self.logger.info("Repository cloned successfully")
 
     def delete_repo(self):
         self.logger.info(f"Deleting repository: {self.repo_url}")
-        processes.git_utils.git_delete_repo(REPO_TEMP_DIR, self.task_id)
+        utils.git.git_delete_repo(REPO_TEMP_DIR, self.task_id)
         self.logger.info("Repository deleted successfully")
 
     def reset_repo(self):
         self.logger.info(f"Resetting repository: {self.repo_url}")
-        processes.git_utils.git_reset_repo(REPO_TEMP_DIR, self.task_id)
+        utils.git.git_reset_repo(REPO_TEMP_DIR, self.task_id)
         self.logger.info("Repository reset successfully")
 
     def generate_diff(self):
         self.logger.info(f"Generating diff for repository: {self.repo_url}")
-        diff = processes.git_utils.git_generate_diff(REPO_TEMP_DIR, self.task_id)
+        diff = utils.git.git_generate_diff(REPO_TEMP_DIR, self.task_id)
         self.logger.info("Diff generated successfully")
         return diff
 
     def list_all_files(self):
         self.logger.info(f"Listing all files in repository: {self.repo_url}")
-        files = processes.filesystem_io.list_all_files(REPO_TEMP_DIR, self.task_id)
+        files = utils.filesystem_io.list_all_files(REPO_TEMP_DIR, self.task_id)
         return files
 
     def read_file(self, filename: str):
         self.logger.info(f"Reading file {filename}")
-        content = processes.filesystem_io.safe_read_file(REPO_TEMP_DIR, self.task_id, filename)
+        content = utils.filesystem_io.safe_read_file(REPO_TEMP_DIR, self.task_id, filename)
         return content
 
     def modify_file(self, filename: str, content: str):
         self.logger.info(f"Modifying file {filename}")
-        processes.filesystem_io.safe_modify_file(REPO_TEMP_DIR, self.task_id, filename, content)
+        utils.filesystem_io.safe_modify_file(REPO_TEMP_DIR, self.task_id, filename, content)
 
     def delete_file(self, filename: str):
         self.logger.info(f"Deleting file {filename}")
-        processes.filesystem_io.safe_delete_file(REPO_TEMP_DIR, self.task_id, filename)
+        utils.filesystem_io.safe_delete_file(REPO_TEMP_DIR, self.task_id, filename)
 
     def create_file(self, filename: str, content: str):
         self.logger.info(f"Creating file {filename}")
-        processes.filesystem_io.safe_create_file(REPO_TEMP_DIR, self.task_id, filename, content)
+        utils.filesystem_io.safe_create_file(REPO_TEMP_DIR, self.task_id, filename, content)
