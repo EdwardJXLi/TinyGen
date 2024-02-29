@@ -5,13 +5,14 @@ import uuid
 from pathlib import Path
 
 
-def list_all_files(root_path: str | Path, uuid: uuid.UUID) -> list[str]:
+def list_all_files(root_path: str | Path, uuid: uuid.UUID, ignore_binary_files: bool = True) -> list[str]:
     """
     Lists all files in the specified directory and its subdirectories.
 
     Parameters:
         root_path (str | Path): The root directory to start listing files from.
         uuid (uuid.UUID): The UUID that was used to name the subdirectory for the clone.
+        ignore_binary_files (bool): Whether to ignore binary files or not. Defaults to True.
 
     Returns:
         list: A list of all files in the specified directory and its subdirectories.
@@ -28,6 +29,15 @@ def list_all_files(root_path: str | Path, uuid: uuid.UUID) -> list[str]:
             # Ignore if the file is in the .git directory
             if ".git" in file_path.parts:
                 continue
+
+            # Ignore all binary files
+            if ignore_binary_files:
+                # Try to open the file as text. If it fails, it's a binary file
+                try:
+                    with open(path, "r", encoding="utf-8") as f:
+                        f.read()
+                except UnicodeDecodeError:
+                    continue
 
             all_files.append(file_path.as_posix())
     return all_files
