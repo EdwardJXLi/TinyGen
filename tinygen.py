@@ -102,7 +102,8 @@ class TinyGenTask(Task):
                         f"{formatted_file_list}\n\n"
                         "With the user's request in mind, first talk through your thought process and brainstorm which files you think are relevant. Files that are deemed optional should be included as well.\n"
                         "Remember to include all file types, such as 'readme', 'requirements', or others, that might typically be overlooked but could be crucial depending on the request.\n"
-                        "If you determine that no files are relevant to the user's request, or if you are unsure about the relevance of any files, please respond with NO RESPONSE.\n\n"
+                        "If you determine that no files are relevant to the user's request, please respond with NO RESPONSE. "
+                        "Only respond with NO RESPONSE if you are ABSOLUTELY sure there are not files that could possibly satisfy the user's request."
                         "User's request:\n"
             },
             {
@@ -127,7 +128,8 @@ class TinyGenTask(Task):
         messages.append(
             {
                 "role": "system",
-                "content": "Based on the detailed information provided and the context of the user's request, please identify and list all files that are relevant and potentially impacted. "
+                "content": "You should no longer respond with NO RESPONSE. You should now provide a list of files that are relevant to the user's request."
+                        "Based on the detailed information provided and the context of the user's request, please identify and list all files that are relevant and potentially impacted. "
                         "This includes not only the files directly mentioned in the user's request but also any additional files that could be affected by the proposed changes or are necessary for the implementation of these changes. "
                         "Consider configuration files, documentation, dependencies listed in files like 'requirements.txt' or 'package.json', and any other files that might be indirectly influenced.\n"
                         "Your response should comprehensively cover every file that needs attention, ensuring that no potentially relevant file is overlooked. "
@@ -148,8 +150,7 @@ class TinyGenTask(Task):
                         ".env.example\n"
                         "requirements.txt\n"
                         "README.md\n\n"
-                        "Please provide your detailed response now. Only include files that exist!\n"
-                        "If you determine that no files are relevant to the user's request, or if you are unsure about the relevance of any files, please respond with NO RESPONSE.\n\n"
+                        "Please provide your detailed response now. Only respond with a list of files! Do not respond with a message!!!\n"
             }
         )
 
