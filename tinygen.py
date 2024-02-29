@@ -101,7 +101,8 @@ class TinyGenTask(Task):
                         "Available files in the directory:\n"
                         f"{formatted_file_list}\n\n"
                         "With the user's request in mind, first talk through your thought process and brainstorm which files you think are relevant. Files that are deemed optional should be included as well.\n"
-                        "Remember to include all file types, such as 'readme', 'requirements', or others, that might typically be overlooked but could be crucial depending on the request.\n\n"
+                        "Remember to include all file types, such as 'readme', 'requirements', or others, that might typically be overlooked but could be crucial depending on the request.\n"
+                        "If you determine that no files are relevant to the user's request, or if you are unsure about the relevance of any files, please respond with [NO RESPONSE].\n\n"
                         "User's request:\n"
             },
             {
@@ -113,6 +114,10 @@ class TinyGenTask(Task):
         # Get the response from OpenAI
         self.logger.info("Asking OpenAI to determine relevant files...")
         response_message = self.gpt.generate(messages)
+
+        # Check if if no files are relavant
+        if not response_message.content or "[NO RESPONSE]" in response_message.content.strip():
+            raise Exception("TinyGen was unable to determine any files to change with the prompt. Consider revising the prompt to be more specific.")
 
         # Append the context onto the response
         messages.append(response_message)  # type: ignore
@@ -143,12 +148,17 @@ class TinyGenTask(Task):
                         "requirements.txt\n"
                         "README.md\n\n"
                         "Please provide your detailed response now. Only include files that exist!\n"
+                        "If you determine that no files are relevant to the user's request, or if you are unsure about the relevance of any files, please respond with [NO RESPONSE].\n\n"
             }
         )
 
         # Get follow up response from OpenAI
         self.logger.info("Asking OpenAI to format relevant files into a list...")
         response_message = self.gpt.generate(messages)
+
+        # Check if if no files are relavant
+        if not response_message.content or "[NO RESPONSE]" in response_message.content.strip():
+            raise Exception("TinyGen was unable to determine any files to change with the prompt. Consider revising the prompt to be more specific.")
 
         # Format and return message from OpenAI
         formatted_relavant_files = response_message.content or ""
