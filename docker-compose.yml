@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: https://github.com/EdwardJXLi/TinyGen.git#main
-      dockerfile: Dockerfile
+  tinygen:
+    build: https://github.com/EdwardJXLi/TinyGen.git#main
+    container_name: tinygen
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
@@ -16,4 +16,3 @@ services:
       MAX_RETRIES: "3"
       HOST: "0.0.0.0"
       PORT: "8000"
-    restart: unless-stopped
