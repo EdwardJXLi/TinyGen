@@ -191,7 +191,7 @@ class TinyGenTask(Task):
             },
             {
                 "role": "user",
-                "content": self.generate_file_xml(relevant_files)
+                "content": self.encode_files(relevant_files)
             },
             {
                 "role": "system",
@@ -232,7 +232,7 @@ class TinyGenTask(Task):
             },
             {
                 "role": "user",
-                "content": self.generate_file_xml(relevant_files)
+                "content": self.encode_files(relevant_files)
             },
             {
                 "role": "system",
@@ -338,7 +338,7 @@ class TinyGenTask(Task):
             },
             {
                 "role": "user",
-                "content": self.generate_file_xml(relevant_files)
+                "content": self.encode_files(relevant_files)
             },
             {
                 "role": "system",
@@ -373,7 +373,7 @@ class TinyGenTask(Task):
         self.logger.info(f"OpenAI responded with: {response_message.content}")
         return "done" == response_message.content.lower().strip()
 
-    def generate_file_xml(self, files: list[str]) -> str:
+    def encode_files(self, files: list[str]) -> str:
         self.logger.info("Generating XML for files...")
         xml = ""
         for file in files:
