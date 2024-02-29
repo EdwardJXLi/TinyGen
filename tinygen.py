@@ -411,7 +411,8 @@ class TinyGenTask(Task):
 
     def reset_repo(self):
         self.logger.info(f"Resetting repository: {self.repo_url}")
-        utils.git.git_reset_repo(REPO_TEMP_DIR, self.task_id)
+        self.delete_repo()
+        self.clone_repo()
         self.logger.info("Repository reset successfully")
 
     def generate_diff(self):
