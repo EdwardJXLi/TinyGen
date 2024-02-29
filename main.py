@@ -3,7 +3,7 @@
 # =======================================================
 import uuid
 
-from fastapi import FastAPI, Request, Response, BackgroundTasks
+from fastapi import FastAPI, Request, Response, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 
 from task import TaskManager
@@ -46,11 +46,14 @@ async def route_generate(request: Request, background_tasks: BackgroundTasks, da
 @app.get("/task/{task_id_str}")
 async def route_get_task(request: Request, task_id_str: str):
     # Convert the task_id_str to a UUID
-    task_id = uuid.UUID(task_id_str)
+    try:
+        task_id = uuid.UUID(task_id_str)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid task_id: {task_id_str}")
 
     # Check if the task exists
     if not task_manager.task_exists(task_id):
-        return {"error": f"Task {task_id_str} not found"}
+        raise HTTPException(status_code=404, detail=f"Task {task_id_str} not found")
 
     # Get the task
     task = task_manager.get_task(task_id)
@@ -62,7 +65,10 @@ async def route_get_task(request: Request, task_id_str: str):
 @app.get("/task/{task_id_str}/result")
 async def route_get_result(task_id_str: str):
     # Convert the task_id_str to a UUID
-    task_id = uuid.UUID(task_id_str)
+    try:
+        task_id = uuid.UUID(task_id_str)
+    except ValueError:
+        return Response(f"Invalid task_id: {task_id_str}", status_code=400, media_type="text/plain")
 
     # Check if the task exists
     if not task_manager.task_exists(task_id):
@@ -83,7 +89,10 @@ async def route_get_result(task_id_str: str):
 @app.get("/task/{task_id_str}/logs")
 async def route_get_logs(task_id_str: str):
     # Convert the task_id_str to a UUID
-    task_id = uuid.UUID(task_id_str)
+    try:
+        task_id = uuid.UUID(task_id_str)
+    except ValueError:
+        return Response(f"Invalid task_id: {task_id_str}", status_code=400, media_type="text/plain")
 
     # Check if the task exists
     if not task_manager.task_exists(task_id):
@@ -100,11 +109,14 @@ async def route_get_logs(task_id_str: str):
 @app.delete("/task/{task_id_str}/cancel")
 async def route_cancel_task(task_id_str: str):
     # Convert the task_id_str to a UUID
-    task_id = uuid.UUID(task_id_str)
+    try:
+        task_id = uuid.UUID(task_id_str)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid task_id: {task_id_str}")
 
     # Check if the task exists
     if not task_manager.task_exists(task_id):
-        return {"error": f"Task {task_id_str} not found"}
+        raise HTTPException(status_code=404, detail=f"Task {task_id_str} not found")
 
     # Get the task
     task = task_manager.get_task(task_id)
