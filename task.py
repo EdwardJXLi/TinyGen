@@ -8,6 +8,9 @@ from enum import Enum
 from datetime import datetime
 from typing import Optional
 
+from utils.supabase import Supabase
+from constants import SUPABASE_PROJECT_URL, SUPABASE_API_KEY
+
 
 # TaskStatus is an enumeration of the possible statuses of a task
 class TaskStatus(Enum):
@@ -46,11 +49,15 @@ class Task:
         self.logs: list[str] = []  # Initialize logs list
 
         # Setup custom logger
-        self.logger = self._setup_logger(task_id)
+        self.logger: logging.Logger = self._setup_logger(task_id)
+
+        # Set up a supabase client stub. If supabase is enabled, the client object will be injected by the task manager
+        self.supabase: Optional[Supabase] = None
 
     def _setup_logger(self, task_id: uuid.UUID) -> logging.Logger:
         logger = logging.getLogger(str(task_id))
         logger.setLevel(logging.INFO)
+        logger.propagate = False  # Fix log duplication bug
 
         # Clear existing handlers
         logger.handlers = []
@@ -78,6 +85,10 @@ class Task:
         if status in [TaskStatus.DONE, TaskStatus.ERROR, TaskStatus.CANCELLED]:
             self.end_time = datetime.now()
             self.elapsed_time = (self.end_time - self.start_time).total_seconds()
+
+        # If supabase is enabled, update the status in the supabase table
+        if self.supabase:
+            self.supabase.update_query(self)
 
     def running(self) -> bool:
         # Check if the task is running
@@ -109,6 +120,11 @@ class Task:
         self.update_status(TaskStatus.CANCELLED)
         self.logger.warning(f"Task {self.task_id} cancelled.")
 
+    def connect_supabase(self, supabase: Supabase):
+        # Connect the supabase client to the task
+        self.supabase = supabase
+        self.logger.info(f"Task {self.task_id} connected to Supabase {supabase.project_url}.")
+
 
 class TaskManager:
     """
@@ -120,9 +136,27 @@ class TaskManager:
         # TODO: In the future, you can replace this with a database
         self.tasks: dict[uuid.UUID, Task] = {}
 
+        # If both supabase project url and api key are non-empty, create a supabase client
+        # Else, set it to None
+        if SUPABASE_PROJECT_URL and SUPABASE_API_KEY:
+            # Create a supabase client to log tasks
+            self.supabase = Supabase(SUPABASE_PROJECT_URL, SUPABASE_API_KEY)
+            print(self.supabase)
+        else:
+            # Do not use supabase
+            self.supabase = None
+
     def add_task(self, task: Task):
         # Add a new task to the in-memory storage
         self.tasks[task.task_id] = task
+
+        # If supabase is enabled, inject the supabase dependency
+        if self.supabase:
+            # Connect the task to the supabase client
+            task.connect_supabase(self.supabase)
+
+            # Add the task to the supabase table
+            self.supabase.add_query(task)
 
     def task_exists(self, task_id: uuid.UUID) -> bool:
         # Check if the task exists in the in-memory storage
