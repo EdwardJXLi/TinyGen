@@ -141,7 +141,6 @@ class TaskManager:
         if SUPABASE_PROJECT_URL and SUPABASE_API_KEY:
             # Create a supabase client to log tasks
             self.supabase = Supabase(SUPABASE_PROJECT_URL, SUPABASE_API_KEY)
-            print(self.supabase)
         else:
             # Do not use supabase
             self.supabase = None
