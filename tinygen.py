@@ -26,7 +26,7 @@ class TinyGenTask(Task):
             self.logger.info("")
 
             # Start up OpenAI Interaction Layer
-            self.openai = OpenAIInteraction(self, OPENAI_API_KEY)
+            self.gpt = OpenAIInteraction(self, OPENAI_API_KEY)
 
             # Clone the repo
             self.clone_repo()
@@ -112,7 +112,7 @@ class TinyGenTask(Task):
 
         # Get the response from OpenAI
         self.logger.info("Asking OpenAI to determine relevant files...")
-        response_message = self.openai.generate(messages)
+        response_message = self.gpt.generate(messages)
 
         # Append the context onto the response
         messages.append(response_message)  # type: ignore
@@ -148,7 +148,7 @@ class TinyGenTask(Task):
 
         # Get follow up response from OpenAI
         self.logger.info("Asking OpenAI to format relevant files into a list...")
-        response_message = self.openai.generate(messages)
+        response_message = self.gpt.generate(messages)
 
         # Format and return message from OpenAI
         formatted_relavant_files = response_message.content or ""
@@ -205,7 +205,7 @@ class TinyGenTask(Task):
 
         # Get the response from OpenAI
         self.logger.info("Asking OpenAI to think through changes...")
-        response_message = self.openai.generate(messages, model="gpt-4-turbo-preview")
+        response_message = self.gpt.generate(messages, model="gpt-4-turbo-preview")
 
         return response_message.content or "No Response"
 
@@ -259,7 +259,7 @@ class TinyGenTask(Task):
         # Keep asking for functions until no more are needed
         while True:
             # Get the response from OpenAI
-            response_message = self.openai.generate(messages, tools=FUNCTIONS, temperature=0.2)
+            response_message = self.gpt.generate(messages, tools=FUNCTIONS, temperature=0.2)
 
             # Append the context onto the response
             messages.append(response_message)  # type: ignore
@@ -362,7 +362,7 @@ class TinyGenTask(Task):
         ]
 
         # Get the response from OpenAI
-        response_message = self.openai.generate(messages, model="gpt-4-turbo-preview")
+        response_message = self.gpt.generate(messages, model="gpt-4-turbo-preview")
 
         # Check if the response was given
         if not response_message.content:
