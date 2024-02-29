@@ -13,6 +13,42 @@ from task import Task
 
 class TinyGenTask(Task):
     def run_tinygen(self):
+        """
+        Start the primary TinyGen AI Task.
+
+        The following steps are taken:
+
+        1. Clone the repository
+
+        2. Get the list of all files in the repository
+
+        3. Begin the ML loop:
+        |
+        |> 3.1. Ask TinyGen to determine the relevant files
+        |
+        |> 3.2. Ask TinyGen to think through its changes in plain text
+        |
+        |> 3.3. Ask TinyGen to convert these changes to functions
+        |  |
+        |  |> 3.3.1. Ask for an initial bunch of functions to run
+        |  |
+        |  |> 3.3.2. Ask if more functions are needed
+        |  |
+        |  |> 3.3.3. Repeat until no more functions are needed
+        |
+        |> 3.4. Apply the changes
+        |
+        |> 3.5. Ask TinyGen if it is satisfied with the changes
+        |  |
+        |  |> 3.5.1. If not, reset the repository and try again
+        |  |
+        |  |> 3.5.2. If yes, continue
+        |
+
+        4. Generate the diff of the files changes in the repository
+
+        5. Clean up and finish the task
+        """
         try:
             # Start the task
             self.start()
