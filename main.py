@@ -98,6 +98,8 @@ async def route_get_result(task_id_str: str):
 # === Task Logs Route ===
 @app.get("/task/{task_id_str}/logs")
 async def route_get_logs(task_id_str: str):
+    # TODO: In the future, be able to follow logs live as they come in
+
     # Convert the task_id_str to a UUID
     try:
         task_id = uuid.UUID(task_id_str)
@@ -118,6 +120,8 @@ async def route_get_logs(task_id_str: str):
 # === Task Cancel Route ===
 @app.delete("/task/{task_id_str}/cancel")
 async def route_cancel_task(task_id_str: str):
+    # TODO: Finish implementing this functionality
+
     # Convert the task_id_str to a UUID
     try:
         task_id = uuid.UUID(task_id_str)

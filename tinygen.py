@@ -85,6 +85,7 @@ class TinyGenTask(Task):
                 self.step_apply_functions(function_calls, relevent_files)
 
                 # Ask TinyGen if it is satisfied with the changes
+                # TODO: Feed the AI's own feedback on its previous attempt into the next attempt!
                 if self.step_ask_if_done(self.prompt, relevent_files):
                     self.logger.info("TinyGen is satisfied with the changes!")
                     break
@@ -430,6 +431,7 @@ class TinyGenTask(Task):
         return "done" == response_message.content.lower().strip()
 
     def encode_files(self, files: list[str]) -> str:
+        # This function encodes the files into XML format so the AI can understand it better
         self.logger.info("Generating XML for files...")
         xml = ""
         for file in files:

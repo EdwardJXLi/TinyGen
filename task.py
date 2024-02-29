@@ -133,7 +133,7 @@ class TaskManager:
 
     def __init__(self):
         # Create an in-memory storage for tasks
-        # TODO: In the future, you can replace this with a database
+        # TODO: In the future, you can replace the in-memory storage with the supabase table
         self.tasks: dict[uuid.UUID, Task] = {}
 
         # If both supabase project url and api key are non-empty, create a supabase client
