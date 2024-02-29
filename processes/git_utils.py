@@ -94,6 +94,6 @@ def git_generate_diff(root_path: str | Path, uuid: uuid.UUID) -> str:
     diff = repo.diff(head_tree, current_tree)
 
     # Convert the diff to a string
-    diff_str = diff.patch if diff.patch else ""
+    diff_str = diff.patch if diff.patch else ""  # type: ignore
 
     return diff_str
