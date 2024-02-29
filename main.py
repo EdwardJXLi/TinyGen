@@ -58,7 +58,17 @@ async def route_get_task(request: Request, task_id_str: str):
     # Get the task
     task = task_manager.get_task(task_id)
 
-    return {"task_id": str(task.task_id), "status": task.status.value, "result_url": f"{request.base_url}task/{task.task_id}/result"}
+    return {
+        "task_id": str(task.task_id),
+        "repo_url": task.repo_url,
+        "prompt": task.prompt,
+        "status": task.status.value,
+        "result_url": f"{request.base_url}task/{task.task_id}/result",
+        "logs_url": f"{request.base_url}task/{task.task_id}/logs",
+        "start_time": task.start_time.isoformat() if task.start_time else "",
+        "end_time": task.end_time.isoformat() if task.end_time else "",
+        "elapsed_time": task.elapsed_time
+    }
 
 
 # === Task Result Route ===
