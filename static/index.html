@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TinyGen</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        input, textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>TinyGen</h1>
+    <form id="tinygen-form">
+        <label for="github-url">GitHub URL:</label>
+        <input type="url" id="github-url" name="github-url" required>
+
+        <label for="prompt">Prompt:</label>
+        <textarea id="prompt" name="prompt" rows="4" required></textarea>
+
+        <label for="openai-key">OpenAI Key:</label>
+        <input type="password" id="openai-key" name="openai-key" required>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        document.getElementById('tinygen-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const githubUrl = document.getElementById('github-url').value;
+            const prompt = document.getElementById('prompt').value;
+            const openaiKey = document.getElementById('openai-key').value;
+
+            const data = {
+                repoUrl: githubUrl,
+                prompt: prompt,
+                openaiKey: openaiKey
+            };
+
+            fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                const taskId = result.task_id;
+                window.location.href = `/task/${taskId}/logs?follow=true`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle any errors that occurred during the request
+            });
+        });
+    </script>
+</body>
+</html>

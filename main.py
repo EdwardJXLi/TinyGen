@@ -4,6 +4,7 @@
 import uuid
 
 from fastapi import FastAPI, Request, Response, BackgroundTasks, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from task import TaskManager
@@ -25,7 +26,7 @@ class GenerateInput(BaseModel):
 # === Root Route ===
 @app.get("/")
 async def route_root():
-    return Response("TinyGen API", media_type="text/plain")
+    return FileResponse("static/index.html")
 
 
 # === Start TinyGen Route ===
