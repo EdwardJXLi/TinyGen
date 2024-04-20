@@ -4,10 +4,10 @@
 import uuid
 
 from fastapi import FastAPI, Request, Response, BackgroundTasks, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 
-from task import TaskManager
+from task import TaskManager, TaskStatus
 from tinygen import TinyGenTask
 
 # Create a FastAPI instance
@@ -99,9 +99,7 @@ async def route_get_result(task_id_str: str):
 
 # === Task Logs Route ===
 @app.get("/task/{task_id_str}/logs")
-async def route_get_logs(task_id_str: str):
-    # TODO: In the future, be able to follow logs live as they come in
-
+async def route_get_logs(task_id_str: str, follow: bool = False):
     # Convert the task_id_str to a UUID
     try:
         task_id = uuid.UUID(task_id_str)
@@ -115,15 +113,36 @@ async def route_get_logs(task_id_str: str):
     # Get the task
     task = task_manager.get_task(task_id)
 
-    # Return the logs
-    return Response("\n".join(task.logs), media_type="text/plain")
+    # Generate HTML Content
+    if follow:
+        # Create base HTML content
+        html_resp = "<html><body><pre style='word-wrap: break-word; white-space: pre-wrap;'>"
+        # If not done, refresh page after 1 second
+        if task.status == TaskStatus.PENDING:
+            html_resp += "\n".join(task.logs)
+            html_resp += "</pre>"
+            html_resp += "<meta http-equiv='refresh' content='1'>"
+            html_resp += "</body></html>"
+        # If done, redirect to result page
+        elif task.status == TaskStatus.DONE:
+            html_resp += "\n".join(task.logs)
+            html_resp += "</pre>"
+            html_resp += f"<meta http-equiv='refresh' content='5; url=/task/{task_id_str}/result'>"
+            html_resp += "</body></html>"
+        # If error, or any other status, keep the logs page
+        else:
+            html_resp += "\n".join(task.logs)
+            html_resp += "</pre></body></html>"
+
+        # Return the logs
+        return HTMLResponse(html_resp)
+    else:
+        return Response("\n".join(task.logs), media_type="text/plain")
 
 
 # === Task Cancel Route ===
 @app.delete("/task/{task_id_str}/cancel")
 async def route_cancel_task(task_id_str: str):
-    # TODO: Finish implementing this functionality
-
     # Convert the task_id_str to a UUID
     try:
         task_id = uuid.UUID(task_id_str)
