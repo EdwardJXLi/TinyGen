@@ -21,6 +21,7 @@ task_manager = TaskManager()
 class GenerateInput(BaseModel):
     repoUrl: str
     prompt: str
+    openaiKey: str
 
 
 # === Root Route ===
@@ -33,7 +34,7 @@ async def route_root():
 @app.post("/generate")
 async def route_generate(request: Request, background_tasks: BackgroundTasks, data: GenerateInput):
     # Create a new task with the repo and prompt
-    task = TinyGenTask(uuid.uuid4(), data.repoUrl, data.prompt)
+    task = TinyGenTask(uuid.uuid4(), data.repoUrl, data.prompt, openai_key=data.openaiKey)
     task_manager.add_task(task)
 
     # Start the task in the background

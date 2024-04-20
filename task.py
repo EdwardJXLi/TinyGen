@@ -36,11 +36,12 @@ class Task:
     """
     A Task class to keep track of a TinyGen task state
     """
-    def __init__(self, task_id: uuid.UUID, repo_url: str, prompt: str):
+    def __init__(self, task_id: uuid.UUID, repo_url: str, prompt: str, openai_key: str | None = None):
         # Initialize the task
         self.task_id: uuid.UUID = task_id
         self.repo_url: str = repo_url
         self.prompt: str = prompt
+        self.openai_key: str | None = openai_key
         self.status: TaskStatus = TaskStatus.CREATED
         self.result: Optional[str] = None
         self.start_time: datetime = datetime.now()

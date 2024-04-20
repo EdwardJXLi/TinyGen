@@ -61,8 +61,17 @@ class TinyGenTask(Task):
             self.logger.info("==================================================")
             self.logger.info("")
 
+            # Get OpenAI Key
+            if not self.openai_key:
+                self.logger.warn("OpenAI API Key not provided. Using default key.")
+                self.openai_key = OPENAI_API_KEY
+                if not self.openai_key:
+                    self.logger.error("OpenAI API Key not provided. Exiting task.")
+                    self.set_error("OpenAI API Key not provided.")
+                    return
+
             # Start up OpenAI Interaction Layer
-            self.gpt = OpenAIInteraction(self, OPENAI_API_KEY)
+            self.gpt = OpenAIInteraction(self, self.openai_key)
 
             # Clone the repo
             self.clone_repo()
