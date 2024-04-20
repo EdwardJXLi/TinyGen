@@ -75,7 +75,7 @@ async def route_get_task(request: Request, task_id_str: str):
 
 # === Task Result Route ===
 @app.get("/task/{task_id_str}/result")
-async def route_get_result(task_id_str: str):
+async def route_get_result(task_id_str: str, format: bool = False):
     # Convert the task_id_str to a UUID
     try:
         task_id = uuid.UUID(task_id_str)
@@ -93,8 +93,29 @@ async def route_get_result(task_id_str: str):
     if not task.is_done():
         return Response("Task Still Pending...", status_code=404, media_type="text/plain")
 
-    # Return the result
-    return Response(task.result, media_type="text/plain")
+    if format:
+        # Format the diff output and return as HTML
+        lines = task.result.split('\n') if task.result else []
+        formatted_lines = []
+
+        for line in lines:
+            if line.startswith('+'):
+                formatted_line = f"<span style='color: green;'>{line}</span>"
+            elif line.startswith('-'):
+                formatted_line = f"<span style='color: red;'>{line}</span>"
+            elif line.startswith('@@'):
+                formatted_line = f"<span style='color: blue;'>{line}</span>"
+            else:
+                formatted_line = line
+
+            formatted_lines.append(formatted_line)
+
+        formatted_diff = '<br>'.join(formatted_lines)
+        html_output = f"<pre style='word-wrap: break-word; white-space: pre-wrap;'>{formatted_diff}</pre>"
+        return HTMLResponse(html_output)
+    else:
+        # Return the result
+        return Response(task.result, media_type="text/plain")
 
 
 # === Task Logs Route ===
@@ -127,7 +148,7 @@ async def route_get_logs(task_id_str: str, follow: bool = False):
         elif task.status == TaskStatus.DONE:
             html_resp += "\n".join(task.logs)
             html_resp += "</pre>"
-            html_resp += f"<meta http-equiv='refresh' content='5; url=/task/{task_id_str}/result'>"
+            html_resp += f"<meta http-equiv='refresh' content='5; url=/task/{task_id_str}/result?format=true'>"
             html_resp += "</body></html>"
         # If error, or any other status, keep the logs page
         else:
